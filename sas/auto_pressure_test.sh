@@ -32,7 +32,7 @@ function fio_run_phy_frequently_flash()
     TEST="fio_run_phy_frequently_flash"
     if [ x"$frequently_phy_addr" = x"" ]
     then 
-        fail_test "When the \"fio_run_phy_frequently_flash\" test, the PHY address is empty, 、
+        fail_test "When the \"fio_run_phy_frequently_flash\" test, the PHY address is empty, \
             exit the test, please check the value of the \"frequently_phy_addr\" parameter, \
             test case execution failed."
 
@@ -143,8 +143,8 @@ function run_business_repeatedly_disk_hot_plug()
     if [ ! -e $hot_plug_disk_enable_file -a ! -e $hot_plug_disk_file ]
     then
         fail_test "'$hot_plug_disk_enable_file' file or '$hot_plug_disk_file' file does not exist, \
-            please check the value of the 'hot_plug_disk_enable_file' parameter and 'hot_plug_disk_file' parameter, \
-            test case execution failed."
+            please check the value of the 'hot_plug_disk_enable_file' \
+			parameter and 'hot_plug_disk_file' parameter, test case execution failed."
 
         return 1
     fi

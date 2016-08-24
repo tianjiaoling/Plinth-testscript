@@ -94,8 +94,8 @@ function disk_data_comprehensive_test()
                     value=`md5sum ~/test.img.$i | awk -F ' ' '{print $1}'`
                     if [ x"$init_value" != x"$value" ]
                     then
-                        fail_test "The test.img($init_value) file is not equal to the MD5 value of the ~/test.img.$i($value) file, \
-                            test case execution failed."
+                        fail_test "The test.img($init_value) file is not equal to the MD5 value \
+							of the ~/test.img.$i($value) file, test case execution failed."
 
                         return 1
                     fi
