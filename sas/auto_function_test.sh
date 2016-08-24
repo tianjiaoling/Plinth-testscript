@@ -44,12 +44,12 @@ function inquire_open_close_phy_info()
 	
 
 	if [ $open_init_number -eq $open_curr_number ]
-    then
+	then
 		fail_test "phy value close, dmesg has no 'Write Protect is off' info, \
 			test case execution failed."
 		
 		return 1
-    fi
+	fi
 
 	if [ $close_init_number -eq $close_curr_number ]
 	then
