@@ -57,7 +57,7 @@ function inquire_open_close_phy_info()
 			test case execution failed."
 		
 		return 1
-    fi	
+	fi	
 
 	fdisk_query
 	pass_test
@@ -221,8 +221,8 @@ function insmod_and_rmmod_module()
     fi
 
 	insmod $mod_main_file 1>/dev/null 2>&1
-    insmod $mod_v1_file 1>/dev/null 2>&1
-    insmod $mod_v2_file 1>/dev/null 2>&1
+	insmod $mod_v1_file 1>/dev/null 2>&1
+	insmod $mod_v2_file 1>/dev/null 2>&1
 		
     cmd_info=`lsmod | grep -w "hisi_sas_main"`
     if [ x"$cmd_info" = x"" ]
