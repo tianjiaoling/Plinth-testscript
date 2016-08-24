@@ -22,19 +22,19 @@
 
 
 
-#config file
+# config file
 CONFIG_INFO="config/auto_sas_test.ini"
-#FIO tools config file
+# FIO tools config file
 FIO_CONFIG="config/fio.conf"
 
-#log
+# log file
 INFO_LOG="log/auto_sas_test.log"
 ERROR_INFO="log/error_info.log"
 
-#D03
+# D03
 PHY_ADDR_VALUE=("0xa2002000" "0xa2002400" "0xa2002800" "0xa2002c00" "0xa2003000" "0xa2003400" "0xa2003800" "0xa2003c00")
 
-##auto_function_test.sh script configuration item.
+## auto_function_test.sh script configuration item.
 #
 is_insmod_and_rmmod_module=`cat $CONFIG_INFO | grep -w "^is_insmod_and_rmmod_module" | awk -F '=' '{print $2}'`
 mod_version=`cat $CONFIG_INFO | grep -w "^mod_version" | awk -F '=' '{print $2}'`
@@ -59,7 +59,7 @@ disk_negotiated_link_rate_value=`cat $CONFIG_INFO | grep -w "^disk_negotiated_li
 is_Key_words_query=`cat $CONFIG_INFO | grep -w "^is_Key_words_query" | awk -F '=' '{print $2}'`
 
 
-##auto_performanxe_test.sh script configuration item.
+## auto_performanxe_test.sh script configuration item.
 #
 is_disk_data_comprehensive_test=`cat $CONFIG_INFO | grep -w "^is_disk_data_comprehensive_test" | awk -F '=' '{print $2}'`
 fio_comprehensive_test_time=`cat $CONFIG_INFO | grep -w "^fio_comprehensive_test_time" | awk -F '=' '{print $2}'`
@@ -80,7 +80,7 @@ is_file_transfer_stability_test=`cat $CONFIG_INFO | grep -w "^is_file_transfer_s
 file_transfer_stability_test_disk=`cat $CONFIG_INFO | grep -w "^file_transfer_stability_test_disk" | awk -F '=' '{print $2}'`
 
 
-##auto_pressure_test.sh script configuration item.
+## auto_pressure_test.sh script configuration item.
 #
 is_fio_run_phy_frequently_flash=`cat $CONFIG_INFO | grep -w "^is_fio_run_phy_frequently_flash" | awk -F '=' '{print $2}'`
 frequently_phy_addr=`cat $CONFIG_INFO | grep -w "^frequently_phy_addr" | awk -F '=' '{print $2}'`
@@ -131,10 +131,9 @@ function fdisk_query()
 	if [ x"$disk_info" = x"" ]
 	then
 		fail_test "Use the \"fdisk -l\" command to query disk failure."
+	
 		return 1
 	fi
-	
-	pass_test "Use the \"fdisk -l\" command to query disk success."
 }
 
 #
@@ -144,7 +143,6 @@ function close_all_phy()
 	do
 		devmem2 $addr w 0x06 1>/dev/null 2>&1
 	done
-
 }
 
 #
@@ -152,7 +150,7 @@ function open_all_phy()
 {
 	for addr in "${PHY_ADDR_VALUE[@]}"
 	do
-        	devmem2 $addr w 0x07 1>/dev/null 2>&1
+        devmem2 $addr w 0x07 1>/dev/null 2>&1
 	done
 }
 

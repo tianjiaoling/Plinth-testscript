@@ -46,7 +46,7 @@ function disk_data_comprehensive_test()
 			dev_partition $dev 1>/dev/null
 		fi
 	
-        	for dev_part in `fdisk -l $dev? | grep "Disk" | awk '{print $2}' | awk -F ':' '{print $1}'`
+        for dev_part in `fdisk -l $dev? | grep "Disk" | awk '{print $2}' | awk -F ':' '{print $1}'`
 		do
 			dev_filename=`echo $dev_part | sed 's#\/#\\\/#g'`
 			for bs in "${fio_comprehensive_test_IO_size[@]}"
@@ -94,10 +94,10 @@ function disk_data_comprehensive_test()
         			value=`md5sum ~/test.img.$i | awk -F ' ' '{print $1}'`
         			if [ x"$init_value" != x"$value" ]
         			then
-                			fail_test "The test.img($init_value) file is not equal to the MD5 value of the ~/test.img.$i($value) file, \
-						test case execution failed."
+						fail_test "The test.img($init_value) file is not equal to the MD5 value of the ~/test.img.$i($value) file, \
+							test case execution failed."
 
-					return 1
+						return 1
         			fi
         			rm -f ~/test.img.$i
 			done
@@ -106,9 +106,9 @@ function disk_data_comprehensive_test()
 			#
 			umount $dev_part
 			temp_info=`mount | grep -w "^$dev_part"`
-                        if [ x"$temp_info" != x"" ]
-                        then
-                                fail_test "Failed to uninstall the "$dev_part" disk, \
+            if [ x"$temp_info" != x"" ]
+            then
+				fail_test "Failed to uninstall the "$dev_part" disk, \
 						test case execution failed."
 
 				return 1
@@ -128,9 +128,8 @@ function runing_fio_link_reset()
 	if [ x"$runing_fio_link_reset_file_name" = x"" -o ! -e fio ]
 	then
 		fail_test "Disk link reset file name is empty, \
-                        Please check the 'runing_fio_link_reset_file_name' parameters of the configuration file, \
-			Or check the current directory 'fio' file is not there, \
-                        test case execution failed."
+			Please check the 'runing_fio_link_reset_file_name' parameters of the configuration file, \
+			Or check the current directory 'fio' file is not there, test case execution failed."
 
 		return 1
 	fi
@@ -152,8 +151,8 @@ function runing_fio_link_reset()
 	
 	info=`grep -iw 'error' $ERROR_INFO`
 	kill_info=`ps | grep "Killed"`
-        if [ x"$info" != x"" -o x"$kill_info" != x"" ]
-        then
+    if [ x"$info" != x"" -o x"$kill_info" != x"" ]
+    then
 		fail_test "FIO tools to run the exception,  The system runs normally,\
 			\"runing_fio_link_reset\" test case execution failed."
 
@@ -169,14 +168,13 @@ function runing_fio_hard_reset()
 {
 	TEST="runing_fio_hard_reset"
 	if [ x"$runing_fio_link_reset_file_name" = x"" -o ! -e fio ]
-        then    
-                fail_test "Disk link reset file name is empty, \
-                        Please check the 'runing_fio_link_reset_file_name' parameters of the configuration file, \
-			Or check the current directory 'fio' file is not there, \
-                        test case execution failed."
+    then    
+		fail_test "Disk link reset file name is empty, \
+			Please check the 'runing_fio_link_reset_file_name' parameters of the configuration file, \
+			Or check the current directory 'fio' file is not there, test case execution failed."
 
 		return 1
-        fi
+    fi
 
 	fio -filename=$dev_file -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync -bs=512B \
 		-numjobs=64 -runtime=$runing_fio_hard_reset_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1 &
@@ -195,13 +193,13 @@ function runing_fio_hard_reset()
 	
 	info=`grep -iw 'error' $ERROR_INFO`
 	kill_info=`ps | grep "Killed"`
-        if [ x"$info" != x"" -o x"$kill_info" != x"" ]
-        then
+    if [ x"$info" != x"" -o x"$kill_info" != x"" ]
+    then
 		fail_test "FIO tools to run the exception,  The system runs normally, \
 			test case execution failed."
 
 		return 1
-        fi
+    fi
 
 	rm -f $ERROR_INFO
 	pass_test
@@ -215,19 +213,18 @@ function file_transfer_stability_test()
 	then
 		fail_test "File transfer stability test disk is empty, \
 			Please check the 'file_transfer_stability_test_disk' parameters of the configuration file, \
-			Or check the current directory 'iozone' file is not there, \
-			test case execution failed."
+			Or check the current directory 'iozone' file is not there, test case execution failed."
 
 		return 1
 	fi
 
 	echo "y" | mkfs.ext4 $file_transfer_stability_test_disk 1>/dev/null 2>&1
-        mount -t ext4 $file_transfer_stability_test_disk /mnt 1>/dev/null 2>&1
-        temp_info=`mount | grep -w "^$file_transfer_stability_test_disk"`
+    mount -t ext4 $file_transfer_stability_test_disk /mnt 1>/dev/null 2>&1
+    temp_info=`mount | grep -w "^$file_transfer_stability_test_disk"`
 
-        if [ x"$temp_info" = x"" ]
-        then
-        	fail_test "Mount "$file_transfer_stability_test_disk" disk failure, \
+    if [ x"$temp_info" = x"" ]
+    then
+        fail_test "Mount "$file_transfer_stability_test_disk" disk failure, \
 			test case execution failed."
 
 		return 1
@@ -235,7 +232,7 @@ function file_transfer_stability_test()
 
 	iozone -a -n 1g -g 10g -i 0 -i 1 -i 2 -f /mnt/iozone -V 5aa51ff1 1 > $ERROR_INFO 2>&1
 	status=$?
-        info=`grep -iw 'error' $ERROR_INFO`
+    info=`grep -iw 'error' $ERROR_INFO`
 	if [ $status -ne 0 -a x"$info" != x"" ]
 	then
 		fail_test "File transfer stability test, IO read and write exception, \

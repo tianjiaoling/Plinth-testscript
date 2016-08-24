@@ -44,18 +44,20 @@ function inquire_open_close_phy_info()
 	
 
 	if [ $open_init_number -eq $open_curr_number ]
-    	then
-        	fail_test "phy value close, dmesg has no 'Write Protect is off' info, \
+    then
+		fail_test "phy value close, dmesg has no 'Write Protect is off' info, \
 			test case execution failed."
+		
 		return 1
-    	fi
+    fi
 
 	if [ $close_init_number -eq $close_curr_number ]
 	then
-        	fail_test "phy value close, dmesg has no 'found dev' info, \
+		fail_test "phy value close, dmesg has no 'found dev' info, \
 			test case execution failed."
+		
 		return 1
-    	fi	
+    fi	
 
 	fdisk_query
 	pass_test
@@ -80,6 +82,7 @@ function hard_reset()
 	then
 		fail_test "Disk wide connection reset ERROR, \
 			test case execution failed."
+		
 		return 1
 	fi
 	
@@ -105,6 +108,7 @@ function link_reset()
 	then
 		fail_test "Disk narrow connection reset ERROR, \
 			test case execution failed."
+		
 		return 1
 	fi
 	
@@ -122,6 +126,7 @@ function disk_negotiated_link_rate_query()
 		fail_test "negotiated link rate file name is empty, \
 			Please check the 'disk_negotiated_link_rate_file_name' parameters of the configuration file, \
                         test case execution failed."
+		
 		return 1
 	fi
 		
@@ -140,6 +145,7 @@ function disk_negotiated_link_rate_query()
 	then
 		fail_test "negotiated link rate query ERROR, \"disk_negotiated_link_rate_query\" \
 			\"disk_negotiated_link_rate_query\" test case execution failed."
+		
 		return 1
 	fi
 	
@@ -156,7 +162,8 @@ function mod_version_query()
 	then
 		fail_test "$mod_main_file Module file does not exist, \
 			test case execution failed."
-		return -1
+		
+		return 1
 	fi
 	info=`modinfo $mod_main_file | grep vermagic: | awk -F ' ' '{print $2}' | awk -F '-' '{print $1}'`
 	
@@ -165,6 +172,7 @@ function mod_version_query()
 		fail_test " Driver version information is not consistent with the actual release version, \
 			Check the correctness of the 'mod_version' configuration item value of the configuration file, \
 			test case execution failed."
+		
 		return 1
 	fi
 	
@@ -179,19 +187,21 @@ function rmmod_module()
 	then
 		fail_test  "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
 			test case execution failed."	
-		return -1
+		
+		return 1
 	fi
 
 	rmmod $mod_v2_file 1>/dev/null 2>&1
-        rmmod $mod_v1_file 1>/dev/null 2>&1
-        rmmod $mod_main_file 1>/dev/null 2>&1
+    rmmod $mod_v1_file 1>/dev/null 2>&1
+    rmmod $mod_main_file 1>/dev/null 2>&1
 
 	mod_file_name=`echo $mod_main_file | awk -F '.' '{print $1}'`
 	cmd_info=`lsmod | grep -w $mod_file_name`
 	if [ x"$cmd_info" != x"" ]
 	then
-        	fail_test "System uninstall module failed,Exit \"rmmod_module\" test, \
+        fail_test "System uninstall module failed,Exit \"rmmod_module\" test, \
 			test case execution failed."
+		
 		return 1
 	fi
 	
@@ -203,28 +213,28 @@ function insmod_and_rmmod_module()
 {
 	TEST="insmod_and_rmmod_module"
 	if [ ! -e $mod_v1_file -a ! -e $mod_v2_file -a ! -e $mod_main_file ]
-        then
-            fail_test "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
-		test case execution failed."
-            
-			return -1
-        fi
-
-		insmod $mod_main_file 1>/dev/null 2>&1
-        insmod $mod_v1_file 1>/dev/null 2>&1
-        insmod $mod_v2_file 1>/dev/null 2>&1
-		
-        cmd_info=`lsmod | grep -w "hisi_sas_main"`
-        if [ x"$cmd_info" = x"" ]
-        then
-        	fail_test "System loading module failed,Exit test, \
+    then
+        fail_test "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
 			test case execution failed."
+            
+		return 1
+    fi
+
+	insmod $mod_main_file 1>/dev/null 2>&1
+    insmod $mod_v1_file 1>/dev/null 2>&1
+    insmod $mod_v2_file 1>/dev/null 2>&1
+		
+    cmd_info=`lsmod | grep -w "hisi_sas_main"`
+    if [ x"$cmd_info" = x"" ]
+    then
+        fail_test "System loading module failed,Exit test, \
+				test case execution failed."
 				
 		return 1
-        fi
+    fi
 		
 	fdisk_query
-        pass_test
+    pass_test
 		
 	mod_version_query
 		
@@ -239,6 +249,7 @@ function Key_words_query()
 	if [ x"$info" == x"" ]
 	then
 		fail_test "Get information ATA failed, test case execution failed."
+	
 		return 1
 	fi
 	
@@ -246,6 +257,7 @@ function Key_words_query()
 	if [ x"$info" == x"" ]
 	then
 		fail_test "Get information NCQ failed, test case execution failed."
+		
 		return 1
 	fi
 	pass_test

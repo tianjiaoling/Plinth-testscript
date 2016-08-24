@@ -44,9 +44,9 @@ function fio_run_phy_frequently_flash()
 	while true
 	do
 		if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
-                then
-                        break
-                fi
+        then
+            break
+        fi
 
 		for phy_addr in `echo $frequently_phy_addr | sed 's/|/ /g'`
 		do
@@ -56,9 +56,9 @@ function fio_run_phy_frequently_flash()
 		sleep 10
 	done
 
-        info=`grep -iw 'error' $ERROR_INFO`
-        if [ x"" != x"" ]
-        then
+    info=`grep -iw 'error' $ERROR_INFO`
+    if [ x"" != x"" ]
+    then
 		fail_test " Business is not interrupted, the system is normal, \
 			test case execution failed."
 
@@ -99,15 +99,15 @@ function fio_long_time_run()
 		-bs=512B -numjobs=64 -runtime=$fio_long_run_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1
 	results=$?
 	info=`grep -iw 'error' $ERROR_INFO`
-        if [ x"" != x"" -a $results -ne 0 ]
-        then
-                fail_test "fio long time run, fio Abnormal operation, \
+    if [ x"" != x"" -a $results -ne 0 ]
+    then
+        fail_test "fio long time run, fio Abnormal operation, \
 			test case execution failed."
 
 		return 1
 	fi
 
-        rm -f $ERROR_INFO
+    rm -f $ERROR_INFO
 	pass_test
 }
 
@@ -122,16 +122,17 @@ function fio_loop_run()
 			-numjobs=64 -runtime=$fio_loop_run_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1
 		results=$?
 		
-        	info=`grep -iw 'error' $ERROR_INFO`
-       		if [ x"$info" != x"" -a $results -ne 0 ]
-        	then
-                	fail_test "fio loop ruing, fio Abnormal operation, test case execution failed, \
+        info=`grep -iw 'error' $ERROR_INFO`
+       	if [ x"$info" != x"" -a $results -ne 0 ]
+        then
+            fail_test "fio loop ruing, fio Abnormal operation, test case execution failed, \
 				test case execution failed."
 
-        		return 1
+        	return 1
 		fi
 	done
-        rm -f $ERROR_INFO
+    
+	rm -f $ERROR_INFO
 	pass_test
 }
 
@@ -154,9 +155,9 @@ function run_business_repeatedly_disk_hot_plug()
 	while true
 	do
 		if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
-                then
-                	break
-                fi
+        then
+            break
+        fi
 		
 		echo 0 > $hot_plug_disk_enable_file
 		sleep 10
