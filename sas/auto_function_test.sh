@@ -124,8 +124,8 @@ function disk_negotiated_link_rate_query()
 	if [ x"$disk_negotiated_link_rate_file_name" = x"" ]
 	then
 		fail_test "negotiated link rate file name is empty, \
-			Please check the 'disk_negotiated_link_rate_file_name' parameters of the configuration file, \
-                        test case execution failed."
+			Please check the 'disk_negotiated_link_rate_file_name' \
+			parameters of the configuration file, test case execution failed."
 		
 		return 1
 	fi
