@@ -1,349 +1,259 @@
 #!/bin/bash
-
-CONFIG_INFO="config/auto_sas_test.ini"
-INFO_LOG="log/auto_sas_function_test.log"
-
-
-#D03
-phy_addr_value=("0xa2002000" "0xa2002400" "0xa2002800" "0xa2002c00" "0xa2003000" "0xa2003400" "0xa2003800" "0xa2003c00")
-
-is_insmod_and_rmmod_module=`cat $CONFIG_INFO | grep -w "^is_insmod_and_rmmod_module" | awk -F '=' '{print $2}'`
-mod_version=`cat $CONFIG_INFO | grep -w "^mod_version" | awk -F '=' '{print $2}'`
-mod_v1_file=`cat $CONFIG_INFO | grep -w "^mod_v1_file" | awk -F '=' '{print $2}'`
-mod_v2_file=`cat $CONFIG_INFO | grep -w "^mod_v2_file" | awk -F '=' '{print $2}'`
-mod_main_file=`cat $CONFIG_INFO | grep -w "^mod_main_file" | awk -F '=' '{print $2}'`
-
-#
-is_hard_reset=`cat $CONFIG_INFO | grep -w "^is_hard_reset" | awk -F '=' '{print $2}'`
-hard_reset_file_name=`cat $CONFIG_INFO | grep -w "^hard_reset_file_name" | awk -F '=' '{print $2}'`
-
-#
-is_link_reset=`cat $CONFIG_INFO | grep -w "^is_link_reset" | awk -F '=' '{print $2}'`
-link_reset_file_name=`cat $CONFIG_INFO | grep -w "^link_reset_file_name" | awk -F '=' '{print $2}'`
-
-#
-is_insert_sata=`cat $CONFIG_INFO | grep -w "^is_insert_sata" | awk -F '=' '{print $2}'`
-
-#
-is_inquire_open_close_phy_info=`cat $CONFIG_INFO | grep -w "^is_inquire_open_close_phy_info" | awk -F '=' '{print $2}'`
-
-#
-disk_negotiated_link_rate_query=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_query" | awk -F '=' '{print $2}'`
-disk_negotiated_link_rate_file_name=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_file_name" | awk -F '=' '{print $2}'`
-disk_negotiated_link_rate_value=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_value" | awk -F '=' '{print $2}'`
-
-#
-is_Key_words_query=`cat $CONFIG_INFO | grep -w "^is_Key_words_query" | awk -F '=' '{print $2}'`
+# 
+# SAS test cases for Plinth
+# 
+# Copyright (C) 2016 - 2020, chenliangfei Limited. 
+# 
+# This program is free software; you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation; either version 2 
+# of the License, or (at your option) any later version. 
+# 
+# This program is distributed in the hope that it will be useful, 
+# but WITHOUT ANY WARRANTY; without even the implied warranty of 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+# GNU General Public License for more details. 
+# 
+# You should have received a copy of the GNU General Public License 
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc.,Shenzhen, China
+# 
+# Author: chenliangfei <liangfei2015@foxmail.com> 
 
 
-#Function Description:
-#
-#Test Case:
-#
-function write_log()
-{
-	TimeFormat="["`date "+%Y-%m-%d %H:%M:%S"`"]"
-	echo "$TimeFormat" $1 $2 >> $INFO_LOG
-}
 
-#Function Description:
-#
-#Test Case:
-#
-function fdisk_query() 
-{
-	write_log " [INFO ] " "Query disk information Begin"
-	disk_info=`fdisk -l 2>/dev/null`
-	
-	if [ x"$disk_info" = x"" ]
-	then
-		write_log " [ERROR] " "Use the \"fdisk -l\" command to query disk failure!"
-	else
-		write_log " [INFO ] " "Use the \"fdisk -l\" command to query disk success!"
-	fi
-	write_log " [INFO ] " "Query disk information ends"
-}
+# loading library
+. include/auto-test-lib
 
-#Function Description:
-#
-#Test Case:
-#
-function close_all_phy()
-{
-#	write_log " [INFO]  " "close all phy Begin"
-	for addr in "${phy_addr_value[@]}"
-	do
-		devmem2 $addr w 0x06 1>/dev/null 2>&1
-	done
 
-#	write_log " [INFO]  " "close all phy End"
-}
-
-#Function Description:
-#
-#Test Case:
-#
-function open_all_phy()
-{
-#	write_log " [INFO]  " "open all phy Begin"
-	for addr in "${phy_addr_value[@]}"
-        do
-                devmem2 $addr w 0x07 1>/dev/null 2>&1
-        done
-
-#	write_log " [INFO]  " "open all phy End"
-}
-
-#Function Description:
-#	Turn off and turn on the PHY port to check if there is a disk log output
-#Test Case:
-#
+## Test case definitions
+# Turn off and turn on the PHY port to check if there is a disk log output
 function inquire_open_close_phy_info()
 {
-	wirte_log " [INFO ] " "Turn off and turn on the PHY port to check if there is a disk log output begin."
-	close_init_number=`dmesg | grep -w "found\ dev" | wc -l`
+	TEST="inquire_open_close_phy_info"
 	open_init_number=`dmesg | grep -w "Write\ Protect\ is\ off" | wc -l`
 
 	close_all_phy
 	open_all_phy
 	
 	#Waiting for phy open successfully.
-	sleep 20
+	sleep 60
 
-	close_curr_number=`dmesg | grep -w "found\ dev" | wc -l`
 	open_curr_number=`dmesg | grep -w "Write\ Protect\ is\ off" | wc -l`
-
-	if [ $close_init_number -eq $close_curr_number ]
-        then
-        	write_log " [ERROR] " "phy value close, dmesg has no 'found dev' info, test case execution failed."
-	else
-		write_log " [INFO ] " "phy value close, dmesg contains 'found dev' info, test case execution success."
-        fi
+	close_curr_number=`dmesg | grep -w "found\ dev" | wc -l`
+	
 
 	if [ $open_init_number -eq $open_curr_number ]
-        then
-        	write_log " [ERROR] " "phy value close, dmesg has no 'Write Protect is off' info, test case execution failed."
-	else
-		write_log " [INFO ] " "phy value close, dmesg contains 'Write Protect is off' info, test case execution success."
-        fi
+    	then
+        	fail_test "phy value close, dmesg has no 'Write Protect is off' info, \
+			test case execution failed."
+		return 1
+    	fi
+
+	if [ $close_init_number -eq $close_curr_number ]
+	then
+        	fail_test "phy value close, dmesg has no 'found dev' info, \
+			test case execution failed."
+		return 1
+    	fi	
 
 	fdisk_query
-	write_log " [INFO ] " "Turn off and turn on the PHY port to check if there is a disk log output end."
+	pass_test
 }
 
 
-#Function Description:
-#	Wide link reset
-#Test Case:
-#
+# Wide link reset
 function hard_reset()
 {
-	write_log " [INFO ] " "Wide link reset begin."
+	TEST="hard_reset"
 	if [ x"$hard_reset_file_name" = x"" ]
 	then
-		write_log " [ERROR] " "Disk wide connection file is empty,\
+		fail_test "Disk wide connection file is empty,\
 			Please check the 'link_reset_file_name' parameters of the configuration file, \
 			test case execution failed."
-	else
-		echo 1 > $hard_reset_file_name 1>/dev/null
-		if [ $? -eq 0 ]
-		then
-			echo " [INFO ] " "Disk wide connection reset OK, test case execution success." 
-		else
-			echo " [ERROR] " "Disk wide connection reset ERROR, test case execution failed."
-		fi
-		fdisk_query
+			
+		return 1
 	fi
-	write_log " [INFO ] " "Wide link reset end."
-}
+	
+	echo 1 > $hard_reset_file_name 1>/dev/null
+	if [ $? -ne 0 ]
+	then
+		fail_test "Disk wide connection reset ERROR, \
+			test case execution failed."
+		return 1
+	fi
+	
+	fdisk_query
+	pass_test
 
 
-#Function Description:
-#	Narrow link reset
-#Test Case:
-#
+# Narrow link reset
 function link_reset()
 {
-	write_log " [INFO ] " "Narrow link reset begin."
+	TEST="link_reset"
 	if [ x"$link_reset_file_name" = x"" ]
 	then
-		write_log " [ERROR] " "Disk narrow connection file is empty, \
+		fail_test "Disk narrow connection file is empty, \
 			Please check the 'link_reset_file_name' parameters of the configuration file, \
 			test case execution failed."
-	else
-		echo 1 > $link_reset_file 1>/dev/null
-		if [ $? -eq 0 ]
-		then
-			write_log " [INFO ] " "Disk narrow connection reset OK, test case execution success."
-		else
-			write_log " [ERROR] " "Disk narrow connection reset ERROR, test case execution failed."
-		fi
-		fdisk_query
+			
+			return 1
 	fi
-	write_log " [INFO ] " "Narrow link reset end."
+	
+	echo 1 > $link_reset_file_name 1>/dev/null
+	if [ $? -ne 0 ]
+	then
+		fail_test "Disk narrow connection reset ERROR, \
+			test case execution failed."
+		return 1
+	fi
+	
+	fdisk_query
+	pass_test
 }
 
 
-#Function Description:
-#      disk negotiated link rate query 
-#Test Case:
-#
+# disk negotiated link rate query 
 function disk_negotiated_link_rate_query()
 {
-	write_log " [INFO] " "negotiated link rate query begin."
+	TEST="disk_negotiated_link_rate_query"
 	if [ x"$disk_negotiated_link_rate_file_name" = x"" ]
 	then
-		write_log " [ERROR] " "negotiated link rate file name is empty, \
+		fail_test "negotiated link rate file name is empty, \
 			Please check the 'disk_negotiated_link_rate_file_name' parameters of the configuration file, \
                         test case execution failed."
-	else
-		rate_value=`cat $disk_negotiated_link_rate_file_name | awk -F '.' '{print $1}'`
-		BRate=0
-		for rate in `echo $disk_negotiated_link_rate_value | sed 's/|/ /g'`
-		do
-			if [ $rate_value -eq $rate ]
-			then
-				write_log " [INFO ] " "negotiated link rate query OK, test case execution success."
-				BRate=1
-				break
-			fi
-		done
-		if [ $BRate -eq 1 ]
-		then
-			write_log " [ERROR] " "negotiated link rate query ERROR, test case execution failed."
-		fi
+		return 1
 	fi
-	write_log " [INFO] " "negotiated link rate query end."
+		
+	rate_value=`cat $disk_negotiated_link_rate_file_name | awk -F '.' '{print $1}'`
+	BRate=0
+	for rate in `echo $disk_negotiated_link_rate_value | sed 's/|/ /g'`
+	do
+		if [ $rate_value -eq $rate ]
+		then
+			BRate=1
+			break
+		fi
+	done
+	
+	if [ $BRate -eq 1 ]
+	then
+		fail_test "negotiated link rate query ERROR, \"disk_negotiated_link_rate_query\" \
+			\"disk_negotiated_link_rate_query\" test case execution failed."
+		return 1
+	fi
+	
+	pass_test
+	
 }
 
 
-#Function Description:
-#	
-#Test Case:
 #
 function mod_version_query()
 {
-	write_log " [INFO ] " "modle version query begin."
+	TEST="mod_version_query"
 	if [ ! -e $mod_main_file]
 	then
-		write_log " [ERROR] " "$mod_main_file Module file does not exist, \
+		fail_test "$mod_main_file Module file does not exist, \
 			test case execution failed."
 		return -1
 	fi
 	info=`modinfo $mod_main_file | grep vermagic: | awk -F ' ' '{print $2}' | awk -F '-' '{print $1}'`
 	
-	if [ x"$info" == x"$mod_version" ]
+	if [ x"$info" != x"$mod_version" ]
 	then
-		write_log " [INFO ] " "Driver version information is consistent with the actual release version, \
-			test case execution success."
-	else
-		write_log " [ERROR] " " Driver version information is not consistent with the actual release version, \
+		fail_test " Driver version information is not consistent with the actual release version, \
 			Check the correctness of the 'mod_version' configuration item value of the configuration file, \
 			test case execution failed."
+		return 1
 	fi
-	write_log " [INFO ] " "modle version query end."
+	
+	pass_test
 }
 
-#Function Description:
-#
-#Test Case:
 #
 function rmmod_module()
 {
-	write_log " [INFO ] " "rmmod modle begin."
+	TEST="rmmod_module"
 	if [ -e $mod_v1_file -a -e $mod_v2_file -a -e $mod_main_file ]
 	then
-        	rmmod $mod_v2_file 1>/dev/null 2>&1
-        	rmmod $mod_v1_file 1>/dev/null 2>&1
-        	rmmod $mod_main_file 1>/dev/null 2>&1
-	else
-		write_log " [ERROR] "  "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
-			test case execution failed."
+		fail_test  "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
+			test case execution failed."	
 		return -1
 	fi
+
+	rmmod $mod_v2_file 1>/dev/null 2>&1
+        rmmod $mod_v1_file 1>/dev/null 2>&1
+        rmmod $mod_main_file 1>/dev/null 2>&1
 
 	mod_file_name=`echo $mod_main_file | awk -F '.' '{print $1}'`
 	cmd_info=`lsmod | grep -w $mod_file_name`
 	if [ x"$cmd_info" != x"" ]
 	then
-        	write_log " [ERROR] " "System uninstall module failed,Exit test, test case execution failed."
-	else
-		write_log " [INFO ] " "System uninstall module successfully, test case execution success."
+        	fail_test "System uninstall module failed,Exit \"rmmod_module\" test, \
+			test case execution failed."
+		return 1
 	fi
-	write_log " [INFO ] " "rmmod modle end."
+	
+	pass_test
 }
 
-#Function Description:
-#
-#Test Case:
 #
 function insmod_and_rmmod_module()
 {
-	write_log " [INFO ] " "Load module test begin"
-	if [ -e $mod_v1_file -a -e $mod_v2_file -a -e $mod_main_file ]
+	TEST="insmod_and_rmmod_module"
+	if [ ! -e $mod_v1_file -a ! -e $mod_v2_file -a ! -e $mod_main_file ]
         then
-                insmod $mod_main_file 1>/dev/null 2>&1
-                insmod $mod_v1_file 1>/dev/null 2>&1
-                insmod $mod_v2_file 1>/dev/null 2>&1
-        else
-                write_log " [ERROR] " "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
-				test case execution failed."
-                return -1
+            fail_test "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
+		test case execution failed."
+            
+			return -1
         fi
 
+		insmod $mod_main_file 1>/dev/null 2>&1
+        insmod $mod_v1_file 1>/dev/null 2>&1
+        insmod $mod_v2_file 1>/dev/null 2>&1
+		
         cmd_info=`lsmod | grep -w "hisi_sas_main"`
         if [ x"$cmd_info" = x"" ]
         then
-                write_log " [ERROR] "  "System loading module failed,Exit test, \
+        	fail_test "System loading module failed,Exit test, \
 			test case execution failed."
-        else
-                write_log " [INFO ] "  "System loading module successfully, \
-			test case execution success."
-		fdisk_query
-		
-		mod_version_query
-		
-		rmmod_module
+				
+		return 1
         fi
+		
+	fdisk_query
+        pass_test
+		
+	mod_version_query
+		
+	rmmod_module
 }
  
-#Function Description:
-#	ATA and NCQ key words query
-#Test Case:
-#
+# ATA and NCQ key words query
 function Key_words_query()
 {
-	write_log " [INFO ] " "ATA and NCQ key words query begin."
+	TEST="Key_words_query"
 	info=`dmesg | grep ATA`
-	if [ x"$info" != x"" ]
+	if [ x"$info" == x"" ]
 	then
-		write_log " [INFO ] " "Get information ATA success, test case execution success."
-	else
-		write_log " [ERROR] " "Get information ATA failed, test case execution failed."
+		fail_test "Get information ATA failed, test case execution failed."
+		return 1
 	fi
-
+	
 	info=`dmesg | grep NCQ`
-	if [ x"$info" != x"" ]
+	if [ x"$info" == x"" ]
 	then
-		write_log " [INFO ] " "Get information NCQ success, test case execution success."
-	else
-		write_log " [ERROR] " "Get information NCQ failed, test case execution failed."
+		fail_test "Get information NCQ failed, test case execution failed."
+		return 1
 	fi
-	write_log " [INFO ] " "ATA and NCQ key words query end."
+	pass_test
 }
 
-#Function Description:
-#
-#Test Case:
 #
 function main()
 {
-
-	if [ $is_inquire_open_close_phy_info -eq 1 ]
-	then
-		inquire_open_close_phy_info
-	fi
-
 	if [ $is_link_reset -eq 1 ]
 	then
 		link_reset
@@ -363,6 +273,11 @@ function main()
 	then
 		Key_words_query
 	fi
+	
+	if [ $is_inquire_open_close_phy_info -eq 1 ]
+	then
+		inquire_open_close_phy_info
+	fi
 }
 
 #########################################################
@@ -380,4 +295,9 @@ then
 	rm -f $INFO_LOG
 fi
 
+# run the tests
 main
+
+# clean exit so lava-test can trust the results
+exit 0
+
