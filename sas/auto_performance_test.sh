@@ -181,7 +181,6 @@ function runing_fio_hard_reset()
         
     while true
     do 
-
         if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
         then
             break
