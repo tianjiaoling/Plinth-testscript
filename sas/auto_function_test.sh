@@ -88,7 +88,7 @@ function hard_reset()
     
     fdisk_query
     pass_test
-
+}
 
 # Narrow link reset
 function link_reset()
