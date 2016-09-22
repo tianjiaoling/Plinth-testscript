@@ -92,11 +92,15 @@ function hard_reset()
         return 1
     fi
     
+<<<<<<< HEAD
     if [ fdisk_query -eq 1 ]
     then
         return 1
     fi
 
+=======
+    fdisk_query
+>>>>>>> c6a177bb41c7d1002f6381495fe32a8b0290f22d
     pass_test
 }
 
