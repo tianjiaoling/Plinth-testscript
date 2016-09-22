@@ -33,6 +33,8 @@ ERROR_INFO="log/error_info.log"
 
 # D03
 PHY_ADDR_VALUE=("0xa2002000" "0xa2002400" "0xa2002800" "0xa2002c00" "0xa2003000" "0xa2003400" "0xa2003800" "0xa2003c00")
+# fio tools IO size
+FIO_BS=("4M" "4K" "512K" "512B")
 
 ## auto_function_test.sh script configuration item.
 #
@@ -48,15 +50,23 @@ hard_reset_file_name=`cat $CONFIG_INFO | grep -w "^hard_reset_file_name" | awk -
 is_link_reset=`cat $CONFIG_INFO | grep -w "^is_link_reset" | awk -F '=' '{print $2}'`
 link_reset_file_name=`cat $CONFIG_INFO | grep -w "^link_reset_file_name" | awk -F '=' '{print $2}'`
 #
-is_insert_sata=`cat $CONFIG_INFO | grep -w "^is_insert_sata" | awk -F '=' '{print $2}'`
-#
 is_inquire_open_close_phy_info=`cat $CONFIG_INFO | grep -w "^is_inquire_open_close_phy_info" | awk -F '=' '{print $2}'`
 #
+is_disk_negotiated_link_rate_file_name=`cat $CONFIG_INFO | grep -w "^is_disk_negotiated_link_rate_file_name" | awk -F '=' '{print $2}'`
 disk_negotiated_link_rate_query=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_query" | awk -F '=' '{print $2}'`
 disk_negotiated_link_rate_file_name=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_file_name" | awk -F '=' '{print $2}'`
 disk_negotiated_link_rate_value=`cat $CONFIG_INFO | grep -w "^disk_negotiated_link_rate_value" | awk -F '=' '{print $2}'`
 #
-is_Key_words_query=`cat $CONFIG_INFO | grep -w "^is_Key_words_query" | awk -F '=' '{print $2}'`
+is_key_words_query=`cat $CONFIG_INFO | grep -w "^is_key_words_query" | awk -F '=' '{print $2}'`
+#
+is_fio_run_close_all_phy=`cat $CONFIG_INFO | grep -w "^is_fio_run_close_all_phy" | awk -F '=' '{print $2}'`
+close_all_phy_fio_disk=`cat $CONFIG_INFO | grep -w "^close_all_phy_fio_disk" | awk -F '=' '{print $2}'`
+close_all_phy_fio_time=`cat $CONFIG_INFO | grep -w "^close_all_phy_fio_time" | awk -F '=' '{print $2}'`
+#
+is_fio_run_enable_disk=`cat $CONFIG_INFO | grep -w "^is_fio_run_enable_disk" | awk -F '=' '{print $2}'`
+fio_enable_disk=`cat $CONFIG_INFO | grep -w "^fio_enable_disk" | awk -F '=' '{print $2}'`
+fio_enable_time=`cat $CONFIG_INFO | grep -w "^fio_enable_time" | awk -F '=' '{print $2}'`
+fio_run_enable_file=`cat $CONFIG_INFO | grep -w "^fio_run_enable_file" | awk -F '=' '{print $2}'`
 
 
 ## auto_performanxe_test.sh script configuration item.
@@ -89,8 +99,8 @@ frequently_fio_disk=`cat $CONFIG_INFO | grep -w "^frequently_fio_disk" | awk -F 
 #
 is_reset_link_loop=`cat $CONFIG_INFO | grep -w "^is_reset_link_loop" | awk -F '=' '{print $2}'`
 reset_link_loop_more=`cat $CONFIG_INFO | grep -w "^reset_link_loop_more" | awk -F '=' '{print $2}'`
-loop_rest_link_file=`cat $CONFIG_INFO | grep -w "^loop_reset_link_file" | awk -F '=' '{print $2}'`
-loop_rest_hard_file=`cat $CONFIG_INFO | grep -w "^loop_reset_hard_file" | awk -F '=' '{print $2}'`
+loop_rest_link_file=`cat $CONFIG_INFO | grep -w "^loop_rest_link_file" | awk -F '=' '{print $2}'`
+loop_rest_hard_file=`cat $CONFIG_INFO | grep -w "^loop_rest_hard_file" | awk -F '=' '{print $2}'`
 #
 is_fio_long_time_run=`cat $CONFIG_INFO | grep -w "^is_fio_long_time_run" | awk -F '=' '{print $2}'`
 fio_long_run_time=`cat $CONFIG_INFO | grep -w "^fio_long_run_time" | awk -F '=' '{print $2}'`
@@ -101,57 +111,56 @@ fio_loop_run_time=`cat $CONFIG_INFO | grep -w "^fio_loop_time" | awk -F '=' '{pr
 fio_loop_run_more=`cat $CONFIG_INFO | grep -w "^fio_loop_run_more" | awk -F '=' '{print $2}'`
 fio_loop_run_disk=`cat $CONFIG_INFO | grep -w "^fio_loop_run_disk" | awk -F '=' '{print $2}'`
 #
-is_run_business_repeatedly_disk_hot_plug=`cat $CONFIG_INFO | grep -w "^is_run_business_repeatedly_disk_hot_plug" | awk -F '=' '{print $2}'`
+is_run_business_repeatedly_disk_enable=`cat $CONFIG_INFO | grep -w "^is_run_business_repeatedly_disk_enable" | awk -F '=' '{print $2}'`
 hot_plug_disk_enable_file=`cat $CONFIG_INFO | grep -w "^hot_plug_disk_enable_file" | awk -F '=' '{print $2}'`
-#
-is_run_business_repeatedly_disk_hot_plug=`cat $CONFIG_INFO | grep -w "^is_run_business_repeatedly_disk_hot_plug" | awk -F '=' '{print $2}'`
 hot_plug_disk_file=`cat $CONFIG_INFO | grep -w "^hot_plug_disk_file" | awk -F '=' '{print $2}'`
 hot_plug_fio_run_time=`cat $CONFIG_INFO | grep -w "^hot_plug_fio_run_time" | awk -F '=' '{print $2}'`
 
 
 
+## Utility function
 #
 function fail_test()
 {
-	local reason="$1"
-	echo "${TEST}: FAIL - ${reason}"
+    local reason="$1"
+    echo "${TEST}: FAIL - ${reason}"
 }
 
 #
 function pass_test()
 {
-	echo "${TEST}: PASS"
+    echo "${TEST}: PASS"
 }
 
 #
 function fdisk_query() 
 {
-	disk_info=`fdisk -l 2>/dev/null`
+    disk_info=`fdisk -l 2>/dev/null`
 	
-	if [ x"$disk_info" = x"" ]
-	then
-		fail_test "Use the \"fdisk -l\" command to query disk failure."
+    if [ x"$disk_info" = x"" ]
+    then
+        fail_test "Use the \"fdisk -l\" command to query disk failure."
 	
-		return 1
-	fi
+        return 1
+    fi
 }
 
 #
 function close_all_phy()
 {
-	for addr in "${PHY_ADDR_VALUE[@]}"
-	do
-		devmem2 $addr w 0x06 1>/dev/null 2>&1
-	done
+    for addr in "${PHY_ADDR_VALUE[@]}"
+    do
+       devmem2 $addr w 0x06 1>/dev/null 2>&1
+    done
 }
 
-#
+# open all phy
 function open_all_phy()
 {
-	for addr in "${PHY_ADDR_VALUE[@]}"
-	do
+    for addr in "${PHY_ADDR_VALUE[@]}"
+    do
         devmem2 $addr w 0x07 1>/dev/null 2>&1
-	done
+    done
 }
 
 # Automatic disk partition
@@ -162,12 +171,12 @@ n
 p
 
 
-+20M
++50G
 n
 p
 
 
-+20M
++50G
 w
 EOF
 }

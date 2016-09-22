@@ -23,7 +23,7 @@
 
 
 # loading library
-. include/auto-test-lib
+. include/auto_test_lib
 
 
 ## Test case definitions
@@ -31,6 +31,7 @@
 function inquire_open_close_phy_info()
 {
     TEST="inquire_open_close_phy_info"
+
     open_init_number=`dmesg | grep -w "Write\ Protect\ is\ off" | wc -l`
 
     close_all_phy
@@ -59,7 +60,11 @@ function inquire_open_close_phy_info()
         return 1
     fi  
 
-    fdisk_query
+    if [ fdisk_query -eq 1 ]
+    then
+        return 1
+    fi
+
     pass_test
 }
 
@@ -68,6 +73,7 @@ function inquire_open_close_phy_info()
 function hard_reset()
 {
     TEST="hard_reset"
+
     if [ x"$hard_reset_file_name" = x"" ]
     then
         fail_test "Disk wide connection file is empty,\
@@ -86,14 +92,19 @@ function hard_reset()
         return 1
     fi
     
-    fdisk_query
-    pass_test
+    if [ fdisk_query -eq 1 ]
+    then
+        return 1
+    fi
 
+    pass_test
+}
 
 # Narrow link reset
 function link_reset()
 {
     TEST="link_reset"
+
     if [ x"$link_reset_file_name" = x"" ]
     then
         fail_test "Disk narrow connection file is empty, \
@@ -112,7 +123,11 @@ function link_reset()
         return 1
     fi
     
-    fdisk_query
+    if [ fdisk_query -eq 1 ]
+    then
+        return 1
+    fi
+
     pass_test
 }
 
@@ -121,6 +136,7 @@ function link_reset()
 function disk_negotiated_link_rate_query()
 {
     TEST="disk_negotiated_link_rate_query"
+
     if [ x"$disk_negotiated_link_rate_file_name" = x"" ]
     then
         fail_test "negotiated link rate file name is empty, \
@@ -149,15 +165,14 @@ function disk_negotiated_link_rate_query()
         return 1
     fi
     
-    pass_test
-    
+    pass_test   
 }
-
 
 #
 function mod_version_query()
 {
     TEST="mod_version_query"
+
     if [ ! -e $mod_main_file]
     then
         fail_test "$mod_main_file Module file does not exist, \
@@ -183,6 +198,7 @@ function mod_version_query()
 function rmmod_module()
 {
     TEST="rmmod_module"
+
     if [ -e $mod_v1_file -a -e $mod_v2_file -a -e $mod_main_file ]
     then
         fail_test  "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
@@ -212,6 +228,7 @@ function rmmod_module()
 function insmod_and_rmmod_module()
 {
     TEST="insmod_and_rmmod_module"
+
     if [ ! -e $mod_v1_file -a ! -e $mod_v2_file -a ! -e $mod_main_file ]
     then
         fail_test "$mod_v1_file|$mod_v2_file|$mod_main_file Module file does not exist,Exit test, \
@@ -233,7 +250,11 @@ function insmod_and_rmmod_module()
         return 1
     fi
         
-    fdisk_query
+    if [ fdisk_query -eq 1 ]
+    then
+        return 1
+    fi
+
     pass_test
         
     mod_version_query
@@ -242,9 +263,10 @@ function insmod_and_rmmod_module()
 }
  
 # ATA and NCQ key words query
-function Key_words_query()
+function key_words_query()
 {
-    TEST="Key_words_query"
+    TEST="key_words_query"
+
     info=`dmesg | grep ATA`
     if [ x"$info" == x"" ]
     then
@@ -263,6 +285,92 @@ function Key_words_query()
     pass_test
 }
 
+# When running FIO business, close all phy.
+function fio_run_close_all_phy()
+{
+    TEST="fio_run_close_all_phy"
+    
+    if [ x"$close_all_phy_fio_disk" = x"" ]
+    then 
+        fail_test "When the \"fio_run_close_all_phy\" test, \"close_all_phy_fio_disk\" value is empty, \
+            exit the test,test case execution failed."
+
+        return 1
+    fi
+
+    ./fio -filename=$close_all_phy_fio_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
+        -bs=512B -numjobs=64 -runtime=$close_all_phy_fio_time -group_reporting -stonewall -name=mytest 1>$ERROR_INFO 2>&1 &
+
+    close_all_phy
+    begin_time=`date +%s`
+    while true
+    do
+        if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
+        then
+            break
+        fi
+
+        end_time=`date +%s`
+        if [ `expr $end_time-$begin_time` -ge `2*close_all_phy_fio_time` ]
+        then
+            pid=`ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | awk -F ' ' '{print $2}'`
+            kill -9 $pid
+            open_all_phy
+
+            fail_test " IO read and write timeout,can not normally exit,test case execution failed."
+
+            return 1
+        fi
+    done
+
+    rm -f $ERROR_INFO
+    open_all_phy
+    pass_test
+}
+
+# When running FIO business, enable Disconnect disk.
+function fio_run_enable_disk()
+{
+    TEST="fio_run_close_all_phy"
+    
+    if [ x"$fio_enable_disk" = x"" ]
+    then 
+        fail_test "When the \"fio_run_enable_disk\" test, \"fio_enable_disk\" value is empty, \
+            exit the test,test case execution failed."
+
+        return 1
+    fi
+
+    ./fio -filename=$fio_enable_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
+        -bs=512B -numjobs=64 -runtime=$fio_enable_time -group_reporting -stonewall -name=mytest 1>$ERROR_INFO 2>&1 &
+
+    echo 0 > $fio_run_enable_file
+    begin_time=`date +%s`
+    while true
+    do
+        if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
+        then
+            break
+        fi
+
+        end_time=`date +%s`
+        if [ `expr $end_time-$begin_time` -ge `2*fio_enable_time` ]
+        then
+            pid=`ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | awk -F ' ' '{print $2}'`
+            kill -9 $pid
+            echo 1 > $fio_run_enable_file
+
+            fail_test " IO read and write timeout,can not normally exit,test case execution failed."
+
+            return 1
+        fi
+    done
+
+    rm -f $ERROR_INFO
+    echo 1 > $fio_run_enable_file
+    pass_test
+}
+
 #
 function main()
 {
@@ -276,19 +384,34 @@ function main()
         hard_reset
     fi
     
+    if [ $is_disk_negotiated_link_rate_file_name -eq 1 ]
+    then
+        disk_negotiated_link_rate_file_name
+    fi
+
     if [ $is_insmod_and_rmmod_module -eq 1 ]
     then
         insmod_and_rmmod_module
     fi
 
-    if [ $is_Key_words_query -eq 1 ]
+    if [ $is_key_words_query -eq 1 ]
     then
-        Key_words_query
+        key_words_query
     fi
     
     if [ $is_inquire_open_close_phy_info -eq 1 ]
     then
         inquire_open_close_phy_info
+    fi
+
+    if [ $is_fio_run_close_all_phy -eq 1 ]
+    then
+        fio_run_close_all_phy
+    fi
+
+    if [ $fio_run_enable_disk -eq 1 ]
+    then
+        fio_run_enable_disk
     fi
 }
 

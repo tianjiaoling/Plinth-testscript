@@ -22,25 +22,26 @@
 
 
 # loading library
-. include/auto-test-lib
+. include/auto_test_lib
 
 
 ## Test case definitions
-# Run FIO business, the frequent turn off open phy.
+# When running FIO business, the frequent turn off open phy.
 function fio_run_phy_frequently_flash()
 {
     TEST="fio_run_phy_frequently_flash"
+
     if [ x"$frequently_phy_addr" = x"" ]
     then 
-        fail_test "When the \"fio_run_phy_frequently_flash\" test, the PHY address is empty, \
-            exit the test, please check the value of the \"frequently_phy_addr\" parameter, \
-            test case execution failed."
+        fail_test "When the \"fio_run_phy_frequently_flash\" test, \"frequently_phy_addr\" value is empty, \
+            exit the test, test case execution failed."
 
         return 1
     fi
 
-    fio -filename=$frequently_fio_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
-        -bs=512B -numjobs=64 -runtime=$frequently_fio_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1 &
+    ./fio -filename=$frequently_fio_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
+        -bs=512B -numjobs=64 -runtime=$frequently_fio_time -group_reporting -stonewall -name=mytest 1>$ERROR_INFO 2>&1 &
+
     while true
     do
         if [ `ps -ef | grep fio | grep -v grep | grep -v vfio-irqfd | wc -l` -eq 0 ]
@@ -53,7 +54,7 @@ function fio_run_phy_frequently_flash()
             devmem2 $phy_addr w 0x06 1>/dev/null 2>&1
             devmem2 $phy_addr w 0x07 1>/dev/null 2>&1
         done
-        sleep 10
+        sleep 5
     done
 
     info=`grep -iw 'error' $ERROR_INFO`
@@ -73,6 +74,7 @@ function fio_run_phy_frequently_flash()
 function reset_link_loop()
 {
     TEST="reset_link_loop"
+
     for i in `seq $reset_link_loop_more`
     do
         echo 1 > $loop_rest_link_file
@@ -95,8 +97,9 @@ function reset_link_loop()
 function fio_long_time_run()
 {
     TEST="fio_long_time_run"
-    fio -filename=$fio_long_run_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
-        -bs=512B -numjobs=64 -runtime=$fio_long_run_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1
+
+    ./fio -filename=$fio_long_run_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync \
+        -bs=512B -numjobs=64 -runtime=$fio_long_run_time -group_reporting -stonewall -name=mytest 1>$ERROR_INFO 2>&1
     results=$?
     info=`grep -iw 'error' $ERROR_INFO`
     if [ x"" != x"" -a $results -ne 0 ]
@@ -115,11 +118,12 @@ function fio_long_time_run()
 function fio_loop_run()
 {
     TEST="fio_loop_run"
+
     write_log " [INFO ] " "Frequently read and write tests on disk begin."
     for i in `seq $fio_loop_run_more`
     do
-        fio -filename=$fio_loop_run_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync -bs=4K \
-            -numjobs=64 -runtime=$fio_loop_run_time -group_reporting -name=mytest 1>$ERROR_INFO 2>&1
+        ./fio -filename=$fio_loop_run_disk -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync -bs=4K \
+            -numjobs=64 -runtime=$fio_loop_run_time -group_reporting -stonewall -name=mytest 1>$ERROR_INFO 2>&1
         results=$?
         
         info=`grep -iw 'error' $ERROR_INFO`
@@ -137,9 +141,10 @@ function fio_loop_run()
 }
 
 # Run the business, repeatedly disk hot plug
-function run_business_repeatedly_disk_hot_plug()
+function run_business_repeatedly_disk_enable()
 {
-    TEST="run_business_repeatedly_disk_hot_plug"
+    TEST="run_business_repeatedly_disk_enable"
+
     if [ ! -e $hot_plug_disk_enable_file -a ! -e $hot_plug_disk_file ]
     then
         fail_test "'$hot_plug_disk_enable_file' file or '$hot_plug_disk_file' file does not exist, \
@@ -149,8 +154,9 @@ function run_business_repeatedly_disk_hot_plug()
         return 1
     fi
 
-    fio -filename=$hot_plug_disk_file -direct=1 -iodepth 1 -thread -rw=randread -ioengine=psync -bs=512k \
-        -numjobs=10 -runtime=$hot_plug_fio_run_time -group_reporting -name=mytest 1>/dev/null &
+    ./fio -filename=$hot_plug_disk_file -direct=1 -iodepth 1 -thread -rw=randread -ioengine=psync -bs=512k \
+        -numjobs=10 -runtime=$hot_plug_fio_run_time -group_reporting -stonewall -name=mytest 1>/dev/null &
+
     begin_time=`date +%s`
     while true
     do
@@ -202,9 +208,9 @@ function main()
         fio_loop_run
     fi
 
-    if [ $is_run_business_repeatedly_disk_hot_plug -eq 1 ]
+    if [ $is_run_business_repeatedly_disk_enable -eq 1 ]
     then
-        run_business_repeatedly_disk_hot_plug
+        run_business_repeatedly_disk_enable
     fi
 }
 
