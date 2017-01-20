@@ -261,6 +261,7 @@ function fio_run_enable_disk()
 {
     TEST="fio_run_close_all_phy"
 
+    count_init=`fdisk -l | grep "Disk identifier:" | wc -l`
     for dev in ${ALL_DISK_PART_NAME[*]}
     do
         dev_filename=`echo $dev | sed 's#\/#\\\/#g'`
@@ -274,7 +275,8 @@ function fio_run_enable_disk()
             wait
 
             info=`grep -iw 'error' $ERROR_INFO`
-            if [ x"$info" == x"" ]
+            count_curr=`fdisk -l | grep "Disk identifier:" | wc -l`
+            if [ x"$info" == x"" ] || [ $count_init -ne $count_curr ]
             then
                 rm -f $ERROR_INFO
                 change_sas_phy_file 1 "enable"
