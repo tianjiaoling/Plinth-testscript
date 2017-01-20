@@ -28,6 +28,7 @@
 
 # FIO tools config file
 FIO_CONFIG="config/fio.conf"
+TEMPFIO_CONFIG="config/temp_fio.conf"
 
 # log file
 INFO_LOG="log/auto_sas_test.log"
@@ -35,10 +36,11 @@ ERROR_INFO="log/error_info.log"
 
 # Test case name
 cases_arrary=(
-[1]="key_words_query"       [2]="disk_negotiated_link_rate_query"      [3]="hard_reset"                    [4]="link_reset" 
-[5]="inquire_open_phy_info" [6]="fio_run_close_all_phy"                [7]="fio_run_enable_disk"           [8]="runing_fio_link_reset"
-[9]="runing_fio_hard_reset" [10]="run_business_repeatedly_disk_enable" [11]="file_transfer_stability_test" [12]="fio_loop_run"
-[13]="fio_long_time_run"    [14]="reset_link_loop"                     [15]="fio_run_phy_frequently_flash" [16]="disk_data_comprehensive_test"
+[1]="key_words_query"        [2]="disk_negotiated_link_rate_query" [3]="hard_reset"                           [4]="link_reset" 
+[5]="reset_link_loop"        [6]="reset_hard_loop"                 [7]="loop_enable_disk"                     [8]="runing_fio_link_reset"
+[9]="runing_fio_hard_reset"  [10]="fio_run_enable_disk"            [11]="run_business_repeatedly_disk_enable" [12]="fio_run_phy_frequently_flash"
+[13]="fio_run_close_all_phy" [14]="inquire_open_phy_info"          [15]="file_transfer_stability_test"        [16]="fio_loop_run"
+[17]="fio_long_time_run"     [18]="disk_data_comprehensive_test"
 )
 
 # phy path
@@ -52,14 +54,35 @@ PHY_ADDR_VALUE=(
 "0xa2003800" "0xa2003c00"
 )
 
+# FIO tool parameter list
+FIO_PARAMETER_LIST="
+[global]
+#iodepth=64 #IO queue length for each file
+time_based
+direct=1
+thread=1
+group_reporting
+ioengine=libaio
+ioengine=psync
+randrepeat=0
+norandommap
+numjobs=64
+runtime=300
+rwmixread=50
+rwmixwrite=50
+stonewall
+filename=/dev/sda1
+bs=4k
+
+[randread]
+rw=write
+"
+
 # fio tools IO size
 FIO_BS=("4M" "4K" "512K" "512B")
 
 # fio tools IO Read and write mode
 FIO_RW=("randread" "randwrite" "read" "write" "randrw")
-
-# FIO tool running time,Default is 600s.
-FIO_RUN_TIME=600
 
 # FIO tool long run time,Default is 28800s.
 FIO_LONG_RUN_TIME=28800
@@ -70,9 +93,19 @@ DISK_NEGOTIATED_LINKRATE_VALUE='6|12'
 
 # The FIO tool loops through the disk read and write
 # The number of cycles to execute the FIO tool,Default is 500 times.
-FIO_LOOP_RUN_MORE=500
+LOOP_RUN_MORE=500
 # The FIO tool loops through the disk read and write time,Default is 60s.
-FIO_LOOP_RUN_TIME=60
+LOOP_RUN_TIME=60
+
+# Expands the number of phy that is actually effective, 0~11 .
+EFFECTIVE_PHY_NUM=11
+
+# Number of command executions
+EXEC_COMMAND_NUM=10
+
+# Save all disk partition names
+declare -a ALL_DISK_PART_NAME
+
 
 ## Utility function
 #
@@ -80,12 +113,23 @@ function fail_test()
 {
     local reason="$1"
     printf "%s: %s - %s\n" "${TEST}" "FAIL" "${reason}"
+    echo "${TEST}" "FAIL" "${reason}" >> $INFO_LOG
 }
 
 #
 function pass_test()
 {
     printf "%s: %s\n" "${TEST}" "PASS"
+    echo "${TEST}" "PASS" >> $INFO_LOG
+}
+
+#
+function get_all_disk_part()
+{
+    for name in `fdisk -l | grep -o "/dev/[a-z]d[a-z][1-9]"`
+    do
+        ALL_DISK_PART_NAME[${#ALL_DISK_PART_NAME[*]}]=$name
+    done
 }
 
 #
@@ -94,7 +138,6 @@ function fdisk_query()
     disk_info=`fdisk -l 2>/dev/null`
     if [ x"$disk_info" == x"" ]
     then
-        #fail_test "Use the \"fdisk -l\" command to query disk failure."
         return 1
     fi
     return 0
@@ -105,7 +148,7 @@ function close_all_phy()
 {
     for addr in "${PHY_ADDR_VALUE[@]}"
     do
-       devmem2 $addr w 0x06 1>/dev/null 2>&1
+       devmem $addr w 0x06 1>/dev/null 2>&1
     done
 }
 
@@ -114,7 +157,7 @@ function open_all_phy()
 {
     for addr in "${PHY_ADDR_VALUE[@]}"
     do
-        devmem2 $addr w 0x07 1>/dev/null 2>&1
+        devmem $addr w 0x07 1>/dev/null 2>&1
     done
 }
 
@@ -124,9 +167,12 @@ function change_sas_phy_file()
     for dir in `ls ${PHY_FILE_PATH}`
     do
         str=`cat ${PHY_FILE_PATH}/${dir}/device_type`
-        if [ x"$str" == x"end device" ]
+        num=`echo "$dir" | awk -F":" '{print $NF}'`
+
+        if [ x"$str" == x"end device" ] && [ $num -le $EFFECTIVE_PHY_NUM ]
         then
             echo $1 > ${PHY_FILE_PATH}/${dir}/$2
+            sleep 5
         fi
     done
 }
