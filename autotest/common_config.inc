@@ -1,0 +1,5 @@
+[logdir]
+PCIELOG=/
+
+
+[]
