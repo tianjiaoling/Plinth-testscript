@@ -9,12 +9,6 @@ get_all_disk_part
 # main
 for key in "${!case_map[@]}"
 do
-   if [ x"${case_map[$key]}" = x"on" ]
-   then
-       commd="${key}.sh"
-       source $TEST_CASE_PATH/$commd
-   fi
-
    case "${case_map[$key]}" in
        on)
            commd="${key}.sh"
