@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+#
+
+
+# Test case mapping table
+declare -A case_map=(
+#File transfer stability test, true - oepn test case, flase - close test case, Default is true.
+["iozne_file_transfer_stability_test"]="true" 
+  
+)
+
+# log file
+INFO_LOG="log/auto_sas_test.log"
+ERROR_INFO="log/error_info.log"
+
+# Common tools directory path
+COMMON_TOOL_PATH="../common_tool"
+
+# Test case code directory path
+TEST_CASE_PATH="str"
+
+# Save all disk partition names
+declare -a ALL_DISK_PART_NAME
