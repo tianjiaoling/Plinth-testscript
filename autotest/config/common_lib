@@ -1,0 +1,34 @@
+#!/bin/bash
+
+
+# Load configuration file
+. config/common_config
+
+#############################################################################################################
+# function list
+# new function write at end
+# 1 writeLog
+#############################################################################################################
+
+
+#  Output success test case log information
+#  IN : N/A
+#  OUT: N/A
+function writePass()
+{
+    local Test_Result="PASS"
+    echo "$Module_Name,""$JIRA_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result" >> ${REPORT_FILE}
+    return 0
+}
+
+#  Output fail test case log information
+#  IN : $1 Error log information
+#  OUT: N/A
+function writeFail()
+{
+    local Test_Result="FAIL"
+    local Remark="$1"
+
+    echo "$Module_Name,""$JIRA_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result,""$Remark" >> ${REPORT_FILE}
+    return 0
+}

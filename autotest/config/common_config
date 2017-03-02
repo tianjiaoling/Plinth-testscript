@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Module test run switch, 1 - open test case, 0 - close test case, Default is 1.
+RUN_SAS=1
+RUN_PXE=1
+RUN_PCIE=1
+
+# IMAGE Configuration item
+IMAGE_FILE=common_tool/Image
+IMAGE_DIR_PATH=~/tftp
+
+## Common Configuration item
+SERVER_IP=192.168.1.107
+SERVER_USER=chenliangfei
+SERVER_PASSWD=fly123
+# Single board environment username and password
+SYSTEM_USER=root
+SYSTEM_PASSWD=root
+
+REPORT_FILE=report/report.csv
+AUTOTEST_ZIP_FILE=autotest.tar.gz
+
+# SAS Module Configuration item
+SAS_MAIN=sas_autotest/sas_mian.sh
+SAS_BORADNO=4
+
+# XGE Module Configuration item
+XGE_MAIN=xge_autotest/xge_mian.sh
+XGE_BORADNO=1
+
+# PCIE Module Configuration item
+PCIE_MAIN=sas_autotest/pcie_mian.sh
+PCIE_BORADNO=1
+

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-
-
 # Load common function
-. sas_autotest/config/sas_test_lib
+. pcie_autotest/config/pcie_test_lib
 
 
 # Main operation function
@@ -11,7 +9,7 @@
 # OUT: N/A
 function main()
 {
-    Module_Name="SAS"
+    Module_Name="PCIE"
     
     for key in "${!case_map[@]}"
     do
@@ -23,7 +21,7 @@ function main()
             off)
             ;;
             *)
-                echo "sas_test_config file test case flag parameter configuration error."
+                echo "pcie_test_config file test case flag parameter configuration error."
                 echo "please configure on and off."
                 echo "on  - open test case."
                 echo "off - close test case."
@@ -31,9 +29,6 @@ function main()
        esac
     done
 }
-
-# Get all disk partition information
-get_all_disk_part
 
 main
 

@@ -1,23 +1,15 @@
 #!/bin/bash
-#
-#
-
 
 # Test case mapping table
 declare -A case_map=(
 #File transfer stability test, on - oepn test case, off - close test case, Default is true.
-["iozne_file_transfer_stability_test"]="on" 
-  
-)
+["test_case_file_name"]="on"
 
-# log file
-ERROR_INFO="error_info.log"
+)
 
 # Common tools directory path
 COMMON_TOOL_PATH="common_tool"
 
 # Test case code directory path
-TEST_CASE_PATH="sas_autotest/str"
+TEST_CASE_PATH="pcie_autotest/str"
 
-# Save all disk partition names
-declare -a ALL_DISK_PART_NAME
