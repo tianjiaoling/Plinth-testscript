@@ -17,7 +17,7 @@ ERROR_INFO="error_info.log"
 COMMON_TOOL_PATH="common_tool"
 
 # Test case code directory path
-TEST_CASE_PATH="sas_autotest/str"
+TEST_CASE_PATH="sas_autotest/case_script"
 
 # Save all disk partition names
 declare -a ALL_DISK_PART_NAME

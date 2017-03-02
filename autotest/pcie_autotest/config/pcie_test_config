@@ -11,5 +11,5 @@ declare -A case_map=(
 COMMON_TOOL_PATH="common_tool"
 
 # Test case code directory path
-TEST_CASE_PATH="pcie_autotest/str"
+TEST_CASE_PATH="pcie_autotest/case_script"
 
