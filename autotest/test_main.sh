@@ -37,6 +37,7 @@ function board_run()
 	set test_run_script '$2'
         set SERVER_IP '$SERVER_IP'
 	set autotest_zip '${AUTOTEST_ZIP_FILE}'
+        set report_path '${REPORT_PATH}'
 	spawn board_connect ${boardno}
 	send "\r"
 	expect -re {Press any other key in [0-9]+ seconds to stop automatical booting}
@@ -62,7 +63,7 @@ function board_run()
 	expect ".*#"
 	send "cd ~/autotest;bash -x ${test_run_script}\r"
 	expect -re ":.*#"
-        send "scp report/report.csv ${server_user}@${SERVER_IP}:~/autotest/report/\r"
+        send "scp report/report.csv ${server_user}@${SERVER_IP}:${report_path}\r"
 	expect "password:"
 	send "${server_passwd}\r"
 	expect -re ":.*#"
@@ -84,7 +85,7 @@ function main()
     [ $? != 0 ] && echo "tar test script failed." && return 1
 
     #Output log file header
-    echo "Module Name,JIRA ID,Test Item,Test Case Title,Test Result,Remark" > ${REPORT_FILE}
+    echo "Module Name,JIRA ID,Test Item,Test Case Title,Test Result,Remark" > ${REPORT_PATH}/${REPORT_FILE}
 
     #SAS Module Main function call
     [ ${RUN_SAS} -eq 1 ] && board_run ${SAS_BORADNO} ${SAS_MAIN} &

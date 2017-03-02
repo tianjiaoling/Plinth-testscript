@@ -17,7 +17,8 @@ SERVER_PASSWD=fly123
 SYSTEM_USER=root
 SYSTEM_PASSWD=root
 
-REPORT_FILE=report/report.csv
+REPORT_PATH=~/autotest/report
+REPORT_FILE=report.csv
 AUTOTEST_ZIP_FILE=autotest.tar.gz
 
 # SAS Module Configuration item
