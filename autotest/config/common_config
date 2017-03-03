@@ -22,14 +22,14 @@ REPORT_FILE=report.csv
 AUTOTEST_ZIP_FILE=autotest.tar.gz
 
 # SAS Module Configuration item
-SAS_MAIN=sas_autotest/sas_mian.sh
+SAS_MAIN=sas_autotest/sas_main.sh
 SAS_BORADNO=4
 
 # XGE Module Configuration item
-XGE_MAIN=xge_autotest/xge_mian.sh
+XGE_MAIN=xge_autotest/xge_main.sh
 XGE_BORADNO=1
 
 # PCIE Module Configuration item
-PCIE_MAIN=sas_autotest/pcie_mian.sh
+PCIE_MAIN=sas_autotest/pcie_main.sh
 PCIE_BORADNO=1
 
