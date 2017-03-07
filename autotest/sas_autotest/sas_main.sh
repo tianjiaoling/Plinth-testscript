@@ -32,6 +32,9 @@ function main()
     done
 }
 
+#Output log file header
+writeLogHeader
+
 # Get all disk partition information
 get_all_disk_part
 

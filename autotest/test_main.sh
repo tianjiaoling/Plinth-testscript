@@ -38,6 +38,8 @@ function board_run()
         set SERVER_IP '$SERVER_IP'
 	set autotest_zip '${AUTOTEST_ZIP_FILE}'
         set report_path '${REPORT_PATH}'
+        set report_file '${REPORT_FILE}'
+        set mode_report_file '$3'
 	spawn board_connect ${boardno}
 	send "\r"
 	expect -re {Press any other key in [0-9]+ seconds to stop automatical booting}
@@ -63,7 +65,7 @@ function board_run()
 	expect ".*#"
 	send "cd ~/autotest;bash -x ${test_run_script}\r"
 	expect -re ":.*#"
-        send "scp report/report.csv ${server_user}@${SERVER_IP}:${report_path}\r"
+        send "scp ${report_file} ${server_user}@${SERVER_IP}:${report_path}/${mode_report_file}\r"
 	expect "password:"
 	send "${server_passwd}\r"
 	expect -re ":.*#"
@@ -77,22 +79,22 @@ function board_run()
 # OUT: N/A
 function main()
 {	
+    #update image
     #update_image
-    update_image
 
     cd ~/
     tar -zcvf  ${AUTOTEST_ZIP_FILE} autotest
     [ $? != 0 ] && echo "tar test script failed." && return 1
 
     #Output log file header
-    echo "Module Name,JIRA ID,Test Item,Test Case Title,Test Result,Remark" > ${REPORT_PATH}/${REPORT_FILE}
+    #echo "Module Name,JIRA ID,Test Item,Test Case Title,Test Result,Remark" > ${REPORT_FILE}
 
     #SAS Module Main function call
-    [ ${RUN_SAS} -eq 1 ] && board_run ${SAS_BORADNO} ${SAS_MAIN} &
+    [ ${RUN_SAS} -eq 1 ] && board_run ${SAS_BORADNO} ${SAS_MAIN} ${SAS_REPORT_FILE} &
     #PXE Module Main function call
-    [ ${RUN_PXE} -eq 1 ] && board_run ${PXE_BORADNO} ${PXE_MAIN} &
+    [ ${RUN_XGE} -eq 1 ] && board_run ${XGE_BORADNO} ${XGE_MAIN} ${XGE_REPORT_FILE} &
     #PCIE Module Main function call
-    [ ${RUN_PCIE} -eq 1 ] && board_run ${PCIE_BORADNO} ${PCIE_MAIN} &	
+    [ ${RUN_PCIE} -eq 1 ] && board_run ${PCIE_BORADNO} ${PCIE_MAIN} ${PCIE_REPORT_FILE} &	
 
     # Wait for all background processes to end
     wait

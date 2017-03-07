@@ -2,7 +2,7 @@
 
 
 # Load configuration file
-. config/common_config
+#. config/common_config
 
 #############################################################################################################
 # function list
@@ -17,7 +17,7 @@
 function writePass()
 {
     local Test_Result="PASS"
-    echo "$Module_Name,""$JIRA_ID,""$Designed_Requirement_ID,""$Test_Case_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result" >> ${REPORT_FILE}
+    echo "$Module_Name,""$JIRA_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result" >> ${REPORT_PATH}/${REPORT_FILE}
     return 0
 }
 
@@ -28,16 +28,7 @@ function writeFail()
 {
     local Test_Result="FAIL"
     local Remark="$1"
-    echo "$Module_Name,""$JIRA_ID,""$Designed_Requirement_ID,""$Test_Case_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result,""$Remark" >> ${REPORT_FILE}
+
+    echo "$Module_Name,""$JIRA_ID,""$Test_Item,""$Test_Case_Title,""$Test_Result,""$Remark" >> ${REPORT_PATH}/${REPORT_FILE}
     return 0
 }
-
-# Output log file header
-# IN : N/A
-# OUT: N/A
-function writeLogHeader
-{
-    echo "Module Name,JIRA ID,Designed Requirement ID,Test Case ID,Test Item,Test Case Title,Test Result,Remark" > ${REPORT_FILE}
-    return 0
-}
-

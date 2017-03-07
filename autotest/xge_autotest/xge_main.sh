@@ -30,6 +30,8 @@ function main()
     done
 }
 
+#Output log file header
+writeLogHeader
 
 main
 

@@ -30,6 +30,9 @@ function main()
     done
 }
 
+#Output log file header
+writeLogHeader
+
 main
 
 # clean exit so lava-test can trust the results

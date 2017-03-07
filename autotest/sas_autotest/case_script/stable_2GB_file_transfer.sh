@@ -4,6 +4,7 @@
 function iozne_file_transfer_stability_test()
 {
     Test_Case_Title="iozne_file_transfer_stability_test"
+    Test_Case_ID="ST.FUNC.049/ST.FUNC.050"
 
     for dev_part in "${ALL_DISK_PART_NAME[@]}"
     do
@@ -38,6 +39,8 @@ function main()
 {
     JIRA_ID="PV-926"
     Test_Item="Stable 2GB file transfer"
+    Designed_Requirement_ID="R.SAS.N007.A"
+
     iozne_file_transfer_stability_test
 }
 
