@@ -41,3 +41,26 @@ function writeLogHeader
     return 0
 }
 
+# Set trust relationship for two boards
+# IN : N/A
+# OUT: N/A
+function setTrustRelation
+{
+    rm -f ~/.ssh/known_hosts
+    rm -f ~/.ssh/id_rsa*
+    rm -f ~/autotest/id_rsa* 
+    ssh-keygen -t rsa -N "" -f id_rsa
+    cp id_rsa* ~/.ssh 
+    apt-get install -y expect 1>/dev/null
+    expect -c '
+	set back_ip '$BACK_IP'
+	spawn ssh-copy-id -i id_rsa.pub root@${back_ip}
+	expect "Are you sure you want to continue connecting (yes/no)?"
+	send "yes\r"
+        expect ".*password:"
+	send "root\r"
+	expect ".*$"
+	      '
+    return 0
+}
+

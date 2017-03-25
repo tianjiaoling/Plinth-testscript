@@ -30,8 +30,11 @@ function main()
     done
 }
 
-#Output log file header
+# Output log file header
 writeLogHeader
+
+# 
+setTrustRelation
 
 main
 
